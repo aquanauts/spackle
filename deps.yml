@@ -1,0 +1,13 @@
+---
+name: conda-venv
+
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python==3.7
+  - ipython
+  - aiohttp
+  - pylint
+  - pytest-watch
+  - pytest-aiohttp
