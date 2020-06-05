@@ -1,0 +1,29 @@
+package:
+  name: spackle_server
+  version: {{ VERSION }}
+
+about:
+  summary: Spackle - A web based conda package explorer
+
+source:
+  path: ..
+
+requirements:
+  build:
+    - python==3.7
+    - aiohttp
+  run:
+    - python==3.7
+    - aiohttp
+
+build:
+  entry_points:
+  - spackle = spackle:main
+  script: |
+    set -euo pipefail
+    mv spackle $SP_DIR/
+    sed -i "s/__version__ = 'unversioned'/__version__ = '$PKG_VERSION'/" $SP_DIR/spackle/version.py
+
+test:
+  imports:
+    - spackle

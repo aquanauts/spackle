@@ -9,6 +9,7 @@ dependencies:
   - argh=0.26.2=py37_1001
   - astroid=2.4.1=py37hc8dfbb8_0
   - async-timeout=3.0.1=py_1000
+  - asynctest=0.13.0=py_0
   - attrs=19.3.0=py_0
   - backcall=0.1.0=py_0
   - bzip2=1.0.8=h516909a_2
@@ -50,6 +51,7 @@ dependencies:
   - pyparsing=2.4.7=pyh9f0ad1d_0
   - pytest=5.4.3=py37hc8dfbb8_0
   - pytest-aiohttp=0.3.0=py_0
+  - pytest-mock=3.1.0=py_0
   - pytest-watch=4.1.0=py37_1000
   - python=3.7.0=hd21baee_1006
   - python_abi=3.7=1_cp37m

@@ -1,5 +1,7 @@
 .deps
 .venv
+.test-venv
+dist
 .pytest_cache
 __pycache__
 .miniconda3

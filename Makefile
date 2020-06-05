@@ -8,6 +8,8 @@ PYTHON := $(VENV)/bin/python
 PYTHON_CMD := PYTHONPATH=$(CURDIR) $(PYTHON)
 PROJECT_NAME=$(shell basename $(CURDIR))
 PYLINT_CMD := $(PYTHON_CMD) -m pylint $(PROJECT_NAME) test
+# VERSION is the count of changes on master, or for branches it's the count of changes with '-branch' appended
+export VERSION := $(shell git rev-list --count master)$(subst -master,,-$(shell git rev-parse --abbrev-ref HEAD))
 
 ifndef VERBOSE
 .SILENT:
@@ -64,3 +66,21 @@ solve: | $(CONDA) ## Re-solve locked project dependencies from deps.yml
 .PHONY: run
 run: $(DEPS) ## Run the main function
 	./run
+
+.PHONY: build-package
+build-package:
+	rm -rf dist
+	$(CONDA) install -y conda-build
+	$(eval TMP_CONDA_BLD_PATH := $(shell mktemp -d))
+	  env CONDA_BLD_PATH=$(TMP_CONDA_BLD_PATH) $(CONDA) build conda \
+	    --output-folder dist \
+	    --channel https://conda.aq.tc/base \
+	    --channel https://artifactory.aq.tc/artifactory/api/conda/core-conda-rel \
+	    --channel nodefaults
+	  rm -rf $(TMP_CONDA_BLD_PATH)
+
+.PHONY: package
+package: build-package ## Build and test a conda package
+	rm -rf .test-venv
+	$(CONDA) create -y -p .test-venv -c ./dist/ spackle_server -c conda-forge
+	.test-venv/bin/spackle --version
