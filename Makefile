@@ -73,10 +73,7 @@ build-package:
 	$(CONDA) install -y conda-build
 	$(eval TMP_CONDA_BLD_PATH := $(shell mktemp -d))
 	  env CONDA_BLD_PATH=$(TMP_CONDA_BLD_PATH) $(CONDA) build conda \
-	    --output-folder dist \
-	    --channel https://conda.aq.tc/base \
-	    --channel https://artifactory.aq.tc/artifactory/api/conda/core-conda-rel \
-	    --channel nodefaults
+	    --output-folder dist
 	  rm -rf $(TMP_CONDA_BLD_PATH)
 
 .PHONY: package
