@@ -50,7 +50,7 @@ test: $(DEPS)  ## Run tests
 
 .PHONY: watch
 watch: $(DEPS) ## Run tests and linters continuously
-	$(PYTHON_CMD) -m pytest_watch --runner $(VENV)/bin/pytest --ignore .venv -n --onpass '$(PYLINT_CMD)'
+	$(PYTHON_CMD) -m pytest_watch -v --runner $(VENV)/bin/pytest --ignore .venv --ignore dist --ignore .miniconda3 --ignore .test-venv -n --onpass '$(PYLINT_CMD)'
 
 .PHONY: repl
 repl: ## Run an iPython REPL

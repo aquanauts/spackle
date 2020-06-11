@@ -1,0 +1,55 @@
+<!Doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Spackle</title>
+    <meta name="description" content="The HTML5 Herald">
+    <meta name="author" content="SitePoint">
+    <script type="text/javascript" src='/js/app.js'></script>
+  </head>
+  <style>
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+    td, th {
+      border: 1px solid;
+      text-align: left;
+      padding: 8px;
+    }
+    tr:nth-child(even){
+      background-color: #dddddd;
+    }
+  </style>
+  <body>
+    <div class="markup">
+      <div class="viewContainer">
+      </div>
+
+      <div class="templates" style='display: none;'>
+
+        <div class="homeView">
+          <h1 class='title'>Spackle: Web-based Conda Package Explorer</h1>
+          <form class="searchForm">
+            <h2>Search Conda Packages</h2>
+            <label for="package_input">Project name: </label>
+            <input type="text" class="packageInput" id="package_input"><br><br>
+            <input type="button" value="submit" class="formSubmitButton"/>
+          </form>
+          <div class="loading" style="display: none">
+            <p>Loading...</p>
+          </div>
+          <table class="table">
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </body>
+  <script type="text/javascript" src='/vendor/jquery-2.2.4/jquery-2.2.4.min.js'></script>
+  <script type="module">
+    import routerOnReady from './js/routes.js';
+    $(routerOnReady);
+  </script>
+</html>
