@@ -47,7 +47,7 @@ async def test_can_get_static_content(aiohttp_client):
     resp = await client.get("/tests/index.html")
     assert resp.status == 200
 
-async def xtest_spackle_service_can_load_repodata(mocker):
+async def test_spackle_service_can_load_repodata(mocker):
     # Mock out the constructor, not the instance
     client_session_mock = mocker.patch('aiohttp.ClientSession')
     # Get a reference to the mock instance returned by the constructor
@@ -59,9 +59,14 @@ async def xtest_spackle_service_can_load_repodata(mocker):
     # Replace json with a coroutine mock because we call await on response.json()
     mock_response.json = mock.CoroutineMock()
     # Finally now, we can replace the return value with the data that we want
-    expected_packages = [{"name":"aiohttp", "version": "1.2.3"}]
+    expected_packages = {"name":"some package"}
     mock_response.json.return_value = expected_packages
-
     spackle_service = spackle.Spackle()
     await spackle_service.load_packages()
-    assert spackle_service.packages == expected_packages
+    assert list(spackle_service.packages.keys()) == ["main",
+                                                     "free",
+                                                     "conda-forge",
+                                                     "bioconda",
+                                                     "mosek"]
+    main = spackle_service.packages["main"]
+    assert main == [{"name":"some package"}, {"name":"some package"}]
