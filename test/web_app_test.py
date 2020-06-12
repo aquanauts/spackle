@@ -2,17 +2,43 @@ from asynctest import mock
 import spackle
 
 
-async def xtest_can_get_the_list_of_packages(aiohttp_client):
+async def test_can_get_the_list_of_packages(aiohttp_client):
     app = spackle.create_app()
-    repodata_response = {"packages": {"aiohttp": {"name": "aiohttp_name"}}}
-    #repodata_response = {"packages":{"aiohttp": {"version": "1.2.3"}}}
+    repodata_response = {"channel": [
+        {"packages": {
+            "aiohttp": {
+                "build": "0",
+                "build_number": 0,
+                "date": "0000-00-00",
+                "depends": [],
+                "license_family": "other",
+                "md5": "abcd",
+                "name": "aiohttp",
+                "size": 0,
+                "subdir": "linux-64",
+                "version": "0.0.00"}
+            }
+        }
+    ]}
     app.service.packages = repodata_response
     client = await aiohttp_client(app)
     resp = await client.get("/packages")
     assert resp.status == 200
     package_list = await resp.json()
-    #assert package_list == [{"name":"aiohttp", "version": "1.2.3"}]
-    assert package_list == {"projects": {"aiohttp_name": {"packages": [{"package_name": "aiohttp"}]}}}
+    assert "projects" in package_list
+    projects = package_list['projects']
+    assert "aiohttp" in projects
+    aiohttp = projects['aiohttp']
+    packages = aiohttp['packages']
+    assert len(packages) == 1
+    package1 = packages[0]
+    assert package1 == {"package_name": "aiohttp",
+                        "package_version": "0.0.00",
+                        "package_build": "0",
+                        "package_channel": "channel",
+                        "package_arch": "linux-64",
+                        "package_size": 0,
+                        "package_depends": []}
 
 
 async def test_can_get_static_content(aiohttp_client):
@@ -20,7 +46,6 @@ async def test_can_get_static_content(aiohttp_client):
     client = await aiohttp_client(app)
     resp = await client.get("/tests/index.html")
     assert resp.status == 200
-
 
 async def xtest_spackle_service_can_load_repodata(mocker):
     # Mock out the constructor, not the instance
