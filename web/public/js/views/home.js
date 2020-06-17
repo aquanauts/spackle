@@ -1,20 +1,26 @@
-export default function(hash) {
+export default function(packageArg) {
     const view = template('homeView');
     
     // handle form submission
     view.find('.searchForm').submit(onSubmit);
     view.find('.formSubmitButton').click(onSubmit);
-    
+
+    if (packageArg) {
+        queryPackage(packageArg);
+    }
+
+    function queryPackage(packageName) {
+        // show loading message
+        view.find('.loading').css("display", "block");
+        // get list of packages based on user input
+        getPackageList(packageName);
+    }
+
     function onSubmit(){
         // get user input
         const response = view.find('.packageInput').val();
-        // show loading message
-        $('.loading').css("display", "block");
-        // clear old results
-        $('.table').remove();
-        // get list of packages based on user input
-        getPackageList(response);
-      return false;
+        setHash("#home+" + response);
+        return false;
     }
 
     function getPackageList(response){
@@ -32,8 +38,14 @@ export default function(hash) {
                     "<td>" , val["package_channel"] , "</td>",
                     "<td>" , val["package_arch"] , "</td>",
                     "<td>" , val["package_size"] , "</td>", 
-                    "<td>" , val["package_depends"] , "</td>", 
-                    "</tr>");
+              );
+              // add depends info
+              table.push("<td><ul>");
+              $.each(val["package_depends"], function(index, depend) {
+                  // add dependency to table
+                  table.push("<li id=", depend,">", depend,"</li>");
+              });
+              table.push("</ul></td></tr>");
           });
           // insert table to body
           $.when( $("<table/>", {
@@ -41,8 +53,8 @@ export default function(hash) {
               "id": "table",
               html: table.join( "" )
           }).appendTo("body")).then(function() {
-              // hide loading message
-              $('.loading').css("display", "none");
+              // hide loading messag
+              view.find('.loading').css("display", "none");
           });
       });
       return false;

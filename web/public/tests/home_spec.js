@@ -18,21 +18,33 @@ describe('Home View', function () {
         expect(view.find('.searchForm').length).toEqual(1);
     });
 
-    it('fetches the package list when the form is submitted', async () => {
-        const form = view.find('.searchForm');
-        expect(form.length).toEqual(1);
-        view.find('.searchForm').submit();
-        expect($.get).toHaveBeenCalledWith('/packages');
-    });
-
-    it('adds package response to table', async () => {
+    it('changes hash on submit', async () => {
+        spyOn(window, 'setHash');
         const form = view.find('.searchForm');
         view.find('.packageInput').val('numpy');
         view.find('.searchForm').submit();
-        //const rows = view.find("table");
-        //expect(rows.length).toEqual(3);
-        //getDeferred.resolve(EXAMPLE_RESPONSE);
-        //const rows = view.find('table tr');
-        //expect(rows.length).toEqual(3);
+        expect(window.setHash).toHaveBeenCalledWith("#home+numpy");
+    });
+
+    describe('when the view gets a package', () => {
+        beforeEach(() => {
+            view = homeView("numpy");
+            view.find('.searchForm').submit();
+        });
+
+        it('fetches the package list', async () => {
+            const form = view.find('.searchForm');
+            expect(form.length).toEqual(1);
+            expect($.get).toHaveBeenCalledWith('/packages');
+        });
+
+        it('adds package response to table', async () => {
+            const table = view.find("table");
+            expect(table.length).toEqual(1);
+
+            //getDeferred.resolve(EXAMPLE_RESPONSE);
+            //const rows = view.find('table');
+            //expect(rows.length).toEqual(3);
+        });
     });
 });

@@ -5,19 +5,20 @@ import spackle
 async def test_can_get_the_list_of_packages(aiohttp_client):
     app = spackle.create_app()
     repodata_response = {"channel": [
-        {"packages": {
-            "aiohttp": {
-                "build": "0",
-                "build_number": 0,
-                "date": "0000-00-00",
-                "depends": [],
-                "license_family": "other",
-                "md5": "abcd",
-                "name": "aiohttp",
-                "size": 0,
-                "subdir": "linux-64",
-                "version": "0.0.00"}
-            }
+        {"info": {
+            "subdir": "linux-64"},
+         "packages": {
+             "aiohttp": {
+                 "build": "0",
+                 "build_number": 0,
+                 "date": "0000-00-00",
+                 "depends": [],
+                 "license_family": "other",
+                 "md5": "abcd",
+                 "name": "aiohttp",
+                 "size": 0,
+                 "subdir": "linux-64",
+                 "version": "0.0.00"}}
         }
     ]}
     app.service.packages = repodata_response

@@ -24,6 +24,7 @@ class Spackle():
         for channel in self.packages:
             # iterate over each architecture type
             for arch_type in self.packages[channel]:
+                subdir = arch_type['info']['subdir']
                 # gather data on each package
                 for package_name, package_info in arch_type['packages'].items():
                     project_name = package_info['name']
@@ -31,10 +32,6 @@ class Spackle():
                     build = package_info['build']
                     depends = package_info['depends']
                     size = package_info['size']
-                    if "subdir" in package_info:
-                        subdir = package_info['subdir']
-                    else:
-                        subdir = " "
                     # when project exists in dictionary
                     if project_name in index["projects"]:
                         index["projects"][project_name]["packages"].append({
@@ -70,10 +67,19 @@ class Spackle():
         channel_urls = ['https://repo.anaconda.com/pkgs/main/linux-64/repodata.json',
                         'https://repo.anaconda.com/pkgs/main/noarch/repodata.json',
                         'https://repo.anaconda.com/pkgs/free/linux-64/repodata.json',
-                        'https://repo.anaconda.com/pkgs/free/noarch/repodata.json']
+                        'https://repo.anaconda.com/pkgs/free/noarch/repodata.json',
+                        'https://conda.anaconda.org/conda-forge/noarch/repodata.json',
+                        'https://conda.anaconda.org/conda-forge/linux-64/repodata.json',
+                        'https://conda.anaconda.org/bioconda/linux-64/repodata.json',
+                        'https://conda.anaconda.org/bioconda/noarch/repodata.json',
+                        'https://conda.anaconda.org/mosek/linux-64/repodata.json',
+                        'https://conda.anaconda.org/mosek/noarch/repodata.json']
         for url in channel_urls:
             url_split = url.split('/')
-            channel = url_split[4]
+            if len(url_split) == 7:
+                channel = url_split[4]
+            if len(url_split) == 6:
+                channel = url_split[3]
             logging.info("Loading packages from %s", url)
             response = await self.http_client.get(url)
             self.packages[channel].append(await response.json())

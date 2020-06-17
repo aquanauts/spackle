@@ -3,6 +3,9 @@ function template(name) {
     return $('.templates .' + name).clone();
 }
 
+function setHash(newHash) {
+    window.location.hash = newHash;
+}
 
 function appOnReady() {
     // submit form with enter key
@@ -15,9 +18,10 @@ function appOnReady() {
         }
       });
     }());
+
     
     function onSubmit(){
-      // get user input
+        // get user input
       response = document.getElementById("package_input").value;
       // show loading messags
       document.getElementById("loading").style.display = "block";
