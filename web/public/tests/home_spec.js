@@ -23,7 +23,7 @@ describe('Home View', function () {
         const form = view.find('.searchForm');
         view.find('.packageInput').val('numpy');
         view.find('.searchForm').submit();
-        expect(window.setHash).toHaveBeenCalledWith("#home+numpy");
+        expect(window.setHash).toHaveBeenCalledWith("#search+numpy");
     });
 
     describe('when the view gets a package', () => {

@@ -8,6 +8,7 @@ function showView(hash) {
     const routes = {
         '': homeView,
         '#home': homeView, 
+        '#search': homeView
     };
     const viewFn = routes[viewName];
     $('.viewContainer').empty().append(viewFn.apply(null, args));

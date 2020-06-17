@@ -12,6 +12,8 @@ export default function(packageArg) {
     function queryPackage(packageName) {
         // show loading message
         view.find('.loading').css("display", "block");
+        // clear old results 
+        $('.table').remove();
         // get list of packages based on user input
         getPackageList(packageName);
     }
@@ -19,8 +21,15 @@ export default function(packageArg) {
     function onSubmit(){
         // get user input
         const response = view.find('.packageInput').val();
-        setHash("#home+" + response);
+        setHash("#search+" + response);
         return false;
+    }
+
+    function handleDependencies(depend) {
+        // TODO: clean dependency list
+        // create what to add to table
+        const pushdep = "<li><a href=#search+" + depend + ">" + depend + "</a></li>"
+        return pushdep;
     }
 
     function getPackageList(response){
@@ -43,7 +52,8 @@ export default function(packageArg) {
               table.push("<td><ul>");
               $.each(val["package_depends"], function(index, depend) {
                   // add dependency to table
-                  table.push("<li id=", depend,">", depend,"</li>");
+                  const pushdep = handleDependencies(depend);;
+                  table.push(pushdep);
               });
               table.push("</ul></td></tr>");
           });
