@@ -17,7 +17,27 @@ class Spackle():
                          "mosek": []}
         self.http_client = aiohttp.ClientSession()
 
+    def get_project_data(self, http_request):
+        print("query string: ", http_request)
+        package_list = {'packages': []}
+        for channel in self.packages:
+            for request in self.packages[channel]:
+                arch_type = request['info']['subdir']
+                for package in request['packages']:
+                    package_info = request['packages'][package]
+                    project = package_info['name']
+                    if project == http_request.query['project_name']:
+                        # add archtype and channel to package info
+                        package_info['subdir'] = arch_type
+                        package_info['channel'] = channel
+                        # append package to list
+                        package_list['packages'].append({package: package_info})
+        return web.json_response(data=package_list)
+
+
+
     def get_package_index(self):
+
         index = {"projects": {}}
         # transform self.packages into a new dictionary
         # iterate over each channel
@@ -59,6 +79,7 @@ class Spackle():
 
     async def get_packages(self, _):
         #return web.FileResponse("web/public/index.html")
+        #return web.json_response(data=self.get_project_data(request))
         return web.json_response(data=self.get_package_index())
 
     # Use https://docs.aiohttp.org/en/stable/client.html
@@ -82,16 +103,21 @@ class Spackle():
                 channel = url_split[3]
             logging.info("Loading packages from %s", url)
             response = await self.http_client.get(url)
-            self.packages[channel].append(await response.json())
+            self.populate_packages(await response.json(), channel)
             logging.info("Successfully received packages from %s", url)
+
+    def populate_packages(self, channel_repodata, channel):
+        self.packages[channel].append(channel_repodata)
 
 
 def create_app():
     app = web.Application()
     app.service = Spackle()
     app.add_routes([web.get('/packages', app.service.get_packages),
+                    web.get('/project', app.service.get_project_data),
                     web.get("/", app.service.get_index),
                     web.static('/', WEB_ROOT)])
+    print("printing results:   ", web.get("/", app.service.get_index))
     return app
 
 def main():

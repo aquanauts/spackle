@@ -25,11 +25,32 @@ export default function(packageArg) {
         return false;
     }
 
+    function escapeHtml(raw) {
+        return raw
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;")
+            .replace(/.0a0/, "");
+         }
+
     function handleDependencies(depend) {
-        // TODO: clean dependency list
-        // create what to add to table
-        const pushdep = "<li><a href=#search+" + depend + ">" + depend + "</a></li>"
-        return pushdep;
+        // clean dependency
+        const clean_depend = escapeHtml(depend);
+        //split by version 
+        const clean_depend_split = clean_depend.split(',');
+        // create two version links 
+        let versions = [];
+        const package_version_split = clean_depend_split[0].split(" ");
+        const name = package_version_split[0]
+        // create links to add to table
+        if (package_version_split.length > 1) {
+            versions.push(package_version_split[1]);
+            versions.push(clean_depend_split[1])
+        }
+        return "<li><a href=#search+" + clean_depend+ ">" + clean_depend  + "</a></li>"
+       //  return "<li><a href=#search+" + name + ">" + name + versions  + "</a></li>"
     }
 
     function getPackageList(response){
