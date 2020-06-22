@@ -20,28 +20,6 @@ def repodata_response_fixture():
                 "version": "0.0.00"}}}
 
 
-async def test_can_get_the_list_of_packages(aiohttp_client, repodata_response):
-    app = spackle.create_app()
-    app.service.organize_packages(repodata_response, 'main')
-    client = await aiohttp_client(app)
-    resp = await client.get("/packages")
-    assert resp.status == 200
-    package_list = await resp.json()
-    assert "projects" in package_list
-    projects = package_list['projects']
-    assert "aiohttp" in projects
-    aiohttp = projects['aiohttp']
-    packages = aiohttp['packages']
-    assert len(packages) == 1
-    package1 = packages[0]
-    assert package1 == {"package_name": "aiohttp-0.0.00-abcd",
-                        "package_version": "0.0.00",
-                        "package_build": "0",
-                        "package_channel": "main",
-                        "package_arch": "linux-64",
-                        "package_size": 0,
-                        "package_depends": []}
-
 async def test_can_get_the_list_of_project_names(aiohttp_client, repodata_response):
     app = spackle.create_app()
     app.service.organize_packages(repodata_response, 'main')

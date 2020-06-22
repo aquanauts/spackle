@@ -22,14 +22,10 @@ export default function(packageArg) {
         // show loading message
         view.find('.loading').css("display", "block");
         // clear old results 
-       // $('.table').remove();
-        $('.table_project').remove();
-        // get list of packages based on user input from /packages
-        //getPackageList(packageName);
+        view.find('.table_project').remove();
         // get list from /project
         getPackageListFromProject(packageName);
 
-        autocomplete();
     }
 
     function onSubmit(){
@@ -37,10 +33,6 @@ export default function(packageArg) {
         const response = view.find('.packageInput').val();
         setHash("#search+" + response);
         return false;
-    }
-
-    function autocomplete() {
-        // grab list of project names
     }
 
     function escapeHtml(raw) {
@@ -98,7 +90,7 @@ export default function(packageArg) {
               "class": "table_project",
               "id": "table_project",
               html: table.join( "" )
-          }).appendTo("body")).then(function() {
+          }).appendTo(view)).then(function() {
               // hide loading messag
               view.find('.loading').css("display", "none");
           });
@@ -123,54 +115,5 @@ export default function(packageArg) {
         }); 
         return false;
     }
-
-
-    // getting packagelist from /package
-    function getPackageList(response){
-        // return list of packages associated with user input
-        const table = ["<h2>", response, " Packages: </h2>"] 
-        table.push("<tr>",
-            "<th>Package Name</th>",
-            "<th>Version</th>",
-            "<th>Build</th>",
-            "<th>Channel</th>",
-            "<th>Architecture</th>",
-            "<th>Size</th>",
-            "<th>Dependencies</th>",
-            "</tr>")
-      $.get("/packages").then(function(data) {
-          const output = data.projects[response];
-          $.each( output.packages, function( key, val ) {
-              // push information to table
-              table.push("<tr>", 
-                    "<td>" , val["package_name"], "</td>",
-                    "<td>" , val["package_version"] , "</td>", 
-                    "<td>" , val["package_build"] , "</td>", 
-                    "<td>" , val["package_channel"] , "</td>",
-                    "<td>" , val["package_arch"] , "</td>",
-                    "<td>" , val["package_size"] , "</td>", 
-              );
-              // add depends info
-              table.push("<td><ul>");
-              $.each(val["package_depends"], function(index, depend) {
-                  // add dependency to table
-                  const pushdep = handleDependencies(depend);;
-                  table.push(pushdep);
-              });
-              table.push("</ul></td></tr>");
-          });
-          // insert table to body
-          $.when( $("<table/>", {
-              "class": "table",
-              "id": "table",
-              html: table.join( "" )
-          }).appendTo("body")).then(function() {
-              // hide loading messag
-              view.find('.loading').css("display", "none");
-          });
-      });
-      return false;
-    }
-
     return view;
 }

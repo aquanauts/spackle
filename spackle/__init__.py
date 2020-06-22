@@ -33,50 +33,9 @@ class Spackle():
                         package_list['packages'].append({package: package_info})
         return web.json_response(data=package_list)
 
-    def get_all_packages(self):
-        list_of_project_names = {"projects": []}
-        index = {"projects": {}}
-        # transform self.packages into a new dictionary
-        # iterate over each channel
-        for channel in self.packages:
-            # iterate over each architecture type
-            for arch_type in self.packages[channel]:
-                subdir = arch_type['info']['subdir']
-                # gather data on each package
-                for package_name, package_info in arch_type['packages'].items():
-                    project_name = package_info['name']
-                    version = package_info['version']
-                    build = package_info['build']
-                    depends = package_info['depends']
-                    size = package_info['size']
-                    # when project exists in dictionary
-                    if project_name in index["projects"]:
-                        index["projects"][project_name]["packages"].append({
-                            "package_name": package_name,
-                            "package_version": version,
-                            "package_build": build,
-                            "package_channel": channel,
-                            "package_arch": subdir,
-                            "package_size": size,
-                            "package_depends": depends})
-                    # when project does not exist in dictionary
-                    else:
-                        list_of_project_names["projects"].append(project_name)
-                        index["projects"][project_name] = {"packages": [{
-                            "package_name": package_name,
-                            "package_version": version,
-                            "package_build": build,
-                            "package_channel": channel,
-                            "package_arch": subdir,
-                            "package_size": size,
-                            "package_depends": depends}]}
-        return index
 
     async def get_index(self, _):
         return web.FileResponse(WEB_ROOT + "/index.html")
-
-    async def get_packages(self, _):
-        return web.json_response(data=self.get_all_packages())
 
     # fetch packages from conda channels
     async def load_packages(self):
@@ -123,8 +82,7 @@ class Spackle():
 def create_app():
     app = web.Application()
     app.service = Spackle()
-    app.add_routes([web.get('/packages', app.service.get_packages),
-                    web.get('/project_names', app.service.get_project_names),
+    app.add_routes([web.get('/project_names', app.service.get_project_names),
                     web.get('/project', app.service.query_for_project_data),
                     web.get("/", app.service.get_index),
                     web.static('/', WEB_ROOT)])
