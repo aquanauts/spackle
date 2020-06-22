@@ -32,13 +32,13 @@ describe('Home View', function () {
             view.find('.searchForm').submit();
         });
 
-        it('fetches the package list', async () => {
+        xit('fetches the package list from /packages', async () => {
             const form = view.find('.searchForm');
             expect(form.length).toEqual(1);
             expect($.get).toHaveBeenCalledWith('/packages');
         });
 
-        it('adds package response to table', async () => {
+        xit('adds package response to table for /packages', async () => {
             const table = view.find("table");
             expect(table.length).toEqual(1);
 
@@ -46,5 +46,16 @@ describe('Home View', function () {
             //const rows = view.find('table');
             //expect(rows.length).toEqual(3);
         });
+
+        it('fetches the package list from /project', async () => {
+            expect($.get).toHaveBeenCalledWith('/project?project_name=numpy');
+        }); 
+
+        xit('adds package response to table for /project', async () => {
+            const table_project = view.find("table_project");
+            expect(table_project.length).toEqual(1);
+        });
+
     });
+
 });

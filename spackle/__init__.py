@@ -17,16 +17,15 @@ class Spackle():
                          "mosek": []}
         self.http_client = aiohttp.ClientSession()
 
-    def get_project_data(self, http_request):
-        print("query string: ", http_request)
+    async def query_for_project_data(self, http_request):
         package_list = {'packages': []}
         for channel in self.packages:
-            for request in self.packages[channel]:
-                arch_type = request['info']['subdir']
-                for package in request['packages']:
-                    package_info = request['packages'][package]
-                    project = package_info['name']
-                    if project == http_request.query['project_name']:
+            for channel_repodata in self.packages[channel]:
+                arch_type = channel_repodata['info']['subdir']
+                for package in channel_repodata['packages']:
+                    package_info = channel_repodata['packages'][package]
+                    project_name = package_info['name']
+                    if project_name == http_request.query['project_name']:
                         # add archtype and channel to package info
                         package_info['subdir'] = arch_type
                         package_info['channel'] = channel
@@ -34,10 +33,7 @@ class Spackle():
                         package_list['packages'].append({package: package_info})
         return web.json_response(data=package_list)
 
-
-
-    def get_package_index(self):
-
+    def get_all_packages(self):
         index = {"projects": {}}
         # transform self.packages into a new dictionary
         # iterate over each channel
@@ -78,11 +74,8 @@ class Spackle():
         return web.FileResponse(WEB_ROOT + "/index.html")
 
     async def get_packages(self, _):
-        #return web.FileResponse("web/public/index.html")
-        #return web.json_response(data=self.get_project_data(request))
-        return web.json_response(data=self.get_package_index())
+        return web.json_response(data=self.get_all_packages())
 
-    # Use https://docs.aiohttp.org/en/stable/client.html
     # fetch packages from conda channels
     async def load_packages(self):
         channel_urls = ['https://repo.anaconda.com/pkgs/main/linux-64/repodata.json',
@@ -96,28 +89,31 @@ class Spackle():
                         'https://conda.anaconda.org/mosek/linux-64/repodata.json',
                         'https://conda.anaconda.org/mosek/noarch/repodata.json']
         for url in channel_urls:
-            url_split = url.split('/')
-            if len(url_split) == 7:
-                channel = url_split[4]
-            if len(url_split) == 6:
-                channel = url_split[3]
+            channel = self.parse_channel_url(url)
             logging.info("Loading packages from %s", url)
             response = await self.http_client.get(url)
-            self.populate_packages(await response.json(), channel)
+            self.organize_packages(await response.json(), channel)
             logging.info("Successfully received packages from %s", url)
 
-    def populate_packages(self, channel_repodata, channel):
+    def organize_packages(self, channel_repodata, channel):
         self.packages[channel].append(channel_repodata)
+    
+    def parse_channel_url(self, url):
+        url_split = url.split('/')
+        if len(url_split) == 7:
+            channel = url_split[4]
+        if len(url_split) == 6:
+            channel = url_split[3]
+        return channel
 
 
 def create_app():
     app = web.Application()
     app.service = Spackle()
     app.add_routes([web.get('/packages', app.service.get_packages),
-                    web.get('/project', app.service.get_project_data),
+                    web.get('/project', app.service.query_for_project_data),
                     web.get("/", app.service.get_index),
                     web.static('/', WEB_ROOT)])
-    print("printing results:   ", web.get("/", app.service.get_index))
     return app
 
 def main():

@@ -22,7 +22,7 @@ def repodata_response_fixture():
 
 async def test_can_get_the_list_of_packages(aiohttp_client, repodata_response):
     app = spackle.create_app()
-    app.service.populate_packages(repodata_response, 'main')
+    app.service.organize_packages(repodata_response, 'main')
     client = await aiohttp_client(app)
     resp = await client.get("/packages")
     assert resp.status == 200
@@ -52,7 +52,7 @@ async def test_can_get_static_content(aiohttp_client):
 
 async def test_can_get_info_for_a_single_project(aiohttp_client, repodata_response):
     app = spackle.create_app()
-    app.service.populate_packages(repodata_response, "main")
+    app.service.organize_packages(repodata_response, "main")
     client = await aiohttp_client(app)
     resp = await client.get("/project?project_name=aiohttp")
     assert resp.status == 200
