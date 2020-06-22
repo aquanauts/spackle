@@ -42,6 +42,15 @@ async def test_can_get_the_list_of_packages(aiohttp_client, repodata_response):
                         "package_size": 0,
                         "package_depends": []}
 
+async def test_can_get_the_list_of_project_names(aiohttp_client, repodata_response):
+    app = spackle.create_app()
+    app.service.organize_packages(repodata_response, 'main')
+    client = await aiohttp_client(app)
+    resp = await client.get("/project_names")
+    assert resp.status == 200
+    project_list = await resp.json()
+    project_names = project_list['projects']
+    assert "aiohttp" in project_names
 
 async def test_can_get_static_content(aiohttp_client):
     app = spackle.create_app()

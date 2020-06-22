@@ -34,6 +34,7 @@ class Spackle():
         return web.json_response(data=package_list)
 
     def get_all_packages(self):
+        list_of_project_names = {"projects": []}
         index = {"projects": {}}
         # transform self.packages into a new dictionary
         # iterate over each channel
@@ -60,6 +61,7 @@ class Spackle():
                             "package_depends": depends})
                     # when project does not exist in dictionary
                     else:
+                        list_of_project_names["projects"].append(project_name)
                         index["projects"][project_name] = {"packages": [{
                             "package_name": package_name,
                             "package_version": version,
@@ -97,7 +99,7 @@ class Spackle():
 
     def organize_packages(self, channel_repodata, channel):
         self.packages[channel].append(channel_repodata)
-    
+
     def parse_channel_url(self, url):
         url_split = url.split('/')
         if len(url_split) == 7:
@@ -106,11 +108,23 @@ class Spackle():
             channel = url_split[3]
         return channel
 
+    async def get_project_names(self, _):
+        project_names = set()
+        # iterate over each channel
+        for channel in self.packages:
+            # iterate over each architecture type
+            for arch_type in self.packages[channel]:
+                # gather data on each package
+                for package_info in arch_type['packages'].values():
+                    project_name = package_info['name']
+                    project_names.add(project_name)
+        return web.json_response(data={"projects": list(project_names)})
 
 def create_app():
     app = web.Application()
     app.service = Spackle()
     app.add_routes([web.get('/packages', app.service.get_packages),
+                    web.get('/project_names', app.service.get_project_names),
                     web.get('/project', app.service.query_for_project_data),
                     web.get("/", app.service.get_index),
                     web.static('/', WEB_ROOT)])

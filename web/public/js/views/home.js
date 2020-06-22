@@ -9,6 +9,15 @@ export default function(packageArg) {
         queryPackage(packageArg);
     }
 
+    $.get("/project_names").then(function(data) {
+        let listOfProjectNames = data.projects;
+        listOfProjectNames.sort();
+        view.find('datalist').append(listOfProjectNames.map((projectName) => {  
+            return $('<option>').attr('value', projectName).text(projectName)
+        }));
+    });
+
+
     function queryPackage(packageName) {
         // show loading message
         view.find('.loading').css("display", "block");
@@ -19,6 +28,8 @@ export default function(packageArg) {
         //getPackageList(packageName);
         // get list from /project
         getPackageListFromProject(packageName);
+
+        autocomplete();
     }
 
     function onSubmit(){
@@ -26,6 +37,10 @@ export default function(packageArg) {
         const response = view.find('.packageInput').val();
         setHash("#search+" + response);
         return false;
+    }
+
+    function autocomplete() {
+        // grab list of project names
     }
 
     function escapeHtml(raw) {

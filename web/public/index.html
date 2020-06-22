@@ -30,10 +30,10 @@
 
         <div class="homeView">
           <h1 class='title'>Spackle: Web-based Conda Package Explorer</h1>
-          <form class="searchForm">
+          <form class="searchForm" autocomplete="off">
             <h2>Search Conda Packages</h2>
             <label for="package_input">Project name: </label>
-            <input type="text" class="packageInput" id="package_input"><br><br>
+            <input type="text" class="packageInput" list='project_names' id="package_input" placeholder="Project Name"><br><br>
             <input type="button" value="submit" class="formSubmitButton"/>
           </form>
           <div class="loading" style="display: none">
@@ -41,6 +41,8 @@
           </div>
           <table class="table">
           </table>
+          <datalist id='project_names'>
+          </datalist>
         </div>
 
       </div>

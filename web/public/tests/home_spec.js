@@ -6,7 +6,14 @@ describe('Home View', function () {
     let view, getDeferred;
     beforeEach(() => {
         getDeferred = $.Deferred();
-        spyOn($, 'get').and.returnValue(getDeferred);
+        spyOn($, 'get').and.callFake((url) => {  
+            if (url === '/project_names') {
+                const projectNamesDeferred = $.Deferred();
+                projectNamesDeferred.resolve({"projects": ["numpy", "aiohttp", "python"]});
+                return projectNamesDeferred;
+            }
+            return getDeferred;
+        });
         view = homeView();
     });
 
@@ -16,7 +23,16 @@ describe('Home View', function () {
 
     it('Shows the form', function (){
         expect(view.find('.searchForm').length).toEqual(1);
-    });
+    })
+    
+    it('project name input has autocomplete datalist', function() {
+        const optionElems = view.find('datalist option');
+
+        expect(optionElems.length).toEqual(3)
+        expect(optionElems.get(0).innerText).toEqual('aiohttp')
+        expect(optionElems.get(1).innerText).toEqual('numpy')
+        expect(optionElems.get(2).innerText).toEqual('python')
+    })
 
     it('changes hash on submit', async () => {
         spyOn(window, 'setHash');
