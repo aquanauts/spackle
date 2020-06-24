@@ -18,20 +18,29 @@ export default function(packageArg) {
     });
 
 
-    function queryPackage(packageName) {
+    function queryPackage(packageArg) {
         // show loading message
         view.find('.loading').css("display", "block");
         // clear old results 
         view.find('.table_project').remove();
         // get list from /project
-        getPackageListFromProject(packageName);
-
+        const args = packageArg.split('=');
+        if (args.length == 1) {
+            getPackageListFromProject(args[0]);
+        } else {
+            getPackageListFromProjectWithVersion(args[0], args[1]);
+        }
     }
 
     function onSubmit(){
         // get user input
         const response = view.find('.packageInput').val();
-        setHash("#search+" + response);
+        const versionResponse = view.find('.versionInput').val();
+        if (versionResponse == '') {
+            setHash("#search+" + response);
+        } else {
+            setHash("#search+" + response + "=" + versionResponse);
+        }
         return false;
     }
 
@@ -110,6 +119,25 @@ export default function(packageArg) {
             "<th>Dependencies</th>",
             "</tr>")
         $.get("/project?project_name="+response).then(function(data) {
+            const output = data.packages;
+            loadResponseTable(output, table);
+        }); 
+        return false;
+    }
+
+    // getting packagelist from /versiont
+    function getPackageListFromProjectWithVersion(name, version){
+        const table = ["<h2>", name, "-", version + " Packages: </h2>"] 
+        table.push("<tr>",
+            "<th>Package Name</th>",
+            "<th>Version</th>",
+            "<th>Build</th>",
+            "<th>Channel</th>",
+            "<th>Architecture</th>",
+            "<th>Size</th>",
+            "<th>Dependencies</th>",
+            "</tr>")
+        $.get("/version?project_name="+name+"&version="+version).then(function(data) {
             const output = data.packages;
             loadResponseTable(output, table);
         }); 

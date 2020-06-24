@@ -43,6 +43,23 @@ class Spackle():
                         package_list['packages'].append({package: package_info})
         return web.json_response(data=package_list)
 
+    async def query_for_project_data_with_version(self, http_request):
+        package_list = {'packages': []}
+        for channel in self.packages:
+            for channel_repodata in self.packages[channel]:
+                arch_type = channel_repodata['info']['subdir']
+                for package in channel_repodata['packages']:
+                    package_info = channel_repodata['packages'][package]
+                    project_name = package_info['name']
+                    project_version = package_info['version']
+                    if project_name == http_request.query['project_name']:
+                        if project_version == http_request.query['version']:
+                            # add archtype and channel to package info
+                            package_info['subdir'] = arch_type
+                            package_info['channel'] = channel
+                            # append package to list
+                            package_list['packages'].append({package: package_info})
+        return web.json_response(data=package_list)
 
     async def get_index(self, _):
         return web.FileResponse(WEB_ROOT + "/index.html")
@@ -94,6 +111,7 @@ def create_app():
     app.service = Spackle()
     app.add_routes([web.get('/project_names', app.service.get_project_names),
                     web.get('/project', app.service.query_for_project_data),
+                    web.get('/version', app.service.query_for_project_data_with_version),
                     web.get("/", app.service.get_index),
                     web.static('/', WEB_ROOT)])
     return app

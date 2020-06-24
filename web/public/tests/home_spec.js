@@ -42,36 +42,38 @@ describe('Home View', function () {
         expect(window.setHash).toHaveBeenCalledWith("#search+numpy");
     });
 
-    describe('when the view gets a package', () => {
+    describe('when the view gets only a  project name', () => {
         beforeEach(() => {
             view = homeView("numpy");
             view.find('.searchForm').submit();
         });
 
-        xit('fetches the package list from /packages', async () => {
+        it('fetches the package list from /project', async () => {
             const form = view.find('.searchForm');
             expect(form.length).toEqual(1);
-            expect($.get).toHaveBeenCalledWith('/packages');
-        });
-
-        xit('adds package response to table for /packages', async () => {
-            const table = view.find("table");
-            expect(table.length).toEqual(1);
-
-            //getDeferred.resolve(EXAMPLE_RESPONSE);
-            //const rows = view.find('table');
-            //expect(rows.length).toEqual(3);
-        });
-
-        it('fetches the package list from /project', async () => {
             expect($.get).toHaveBeenCalledWith('/project?project_name=numpy');
         }); 
 
         xit('adds package response to table for /project', async () => {
             const table_project = view.find("table_project");
             expect(table_project.length).toEqual(1);
+            
+            //getDeferred.resolve(EXAMPLE_RESPONSE);
+            //const rows = view.find('table');
+            //expect(rows.length).toEqual(3);
         });
 
+    });
+
+    describe('when the view gets a project name and version from /version', () => {
+        beforeEach(() => {
+            view = homeView("numpy=0.10.1");
+            view.find('.searchForm').submit();
+        });
+    
+        it('fetches the packagelist from /version', async () => {
+            expect($.get).toHaveBeenCalledWith('/version?project_name=numpy&version=0.10.1');
+        });
     });
 
 });

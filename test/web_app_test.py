@@ -60,6 +60,27 @@ async def test_can_get_info_for_a_single_project(aiohttp_client, repodata_respon
             "channel": "main",
             "version": "0.0.00"}}]}
 
+async def test_can_get_info_for_a_single_project_with_version(aiohttp_client, repodata_response):
+    app = spackle.create_app()
+    app.service.organize_packages(repodata_response, "main")
+    client = await aiohttp_client(app)
+    resp = await client.get("/version?project_name=aiohttp&version=0.0.00")
+    assert resp.status == 200
+    text = await resp.text()
+    project_info = json.loads(text)
+    assert project_info == {'packages': [{
+        "aiohttp-0.0.00-abcd": {
+            "build": "0",
+            "build_number": 0,
+            "date": "0000-00-00",
+            "depends": [],
+            "license_family": "other",
+            "md5": "abcd",
+            "name": "aiohttp",
+            "size": 0,
+            "subdir": "linux-64",
+            "channel": "main",
+            "version": "0.0.00"}}]}
 
 async def test_can_periodically_perform_a_task():
     task_fn = mock.CoroutineMock()
