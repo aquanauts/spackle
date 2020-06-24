@@ -5,33 +5,55 @@ terraform {
     region = "us-east-1"
   }
 }
-# Create a new instance of the latest Ubuntu 14.04 on an
-# t2.micro node with an AWS Tag naming it "HelloWorld"
-provider "aws" {
-  region = "us-west-2"
+resource "aws_security_group" "allow_spackle" {
+  name        = "allow_spackle"
+  description = "Allow SSH/HTTP/TLS inbound traffic"
+  #vpc_id      = aws_vpc.main.id
+  ingress {
+    description = "SSH"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+   # cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+  ingress {
+    description = "TLS"
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+   # cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+  ingress {
+    description = "TLS"
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    #cidr_blocks = [aws_vpc.main.cidr_block]
+  }
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
-
+provider "aws" {
+  region = "us-east-1"
+}
 data "aws_ami" "ubuntu" {
   most_recent = true
-
   filter {
     name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-trusty-14.04-amd64-server-*"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
   }
-
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-
   owners = ["099720109477"] # Canonical
 }
-
-#resource "aws_instance" "web" {
- # ami           = "${data.aws_ami.ubuntu.id}"
- # instance_type = "t2.micro"
-
-  #tags = {
-  #  Name = "HelloWorld"
-  #}
-#}
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.ubuntu.id
+  instance_type = "t2.micro"
+  key_name      = "spackle"
+}
