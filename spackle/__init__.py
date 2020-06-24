@@ -8,6 +8,16 @@ import aiohttp
 WEB_ROOT = f"{os.path.dirname(os.path.abspath(__file__))}/../web/public"
 
 
+async def periodic_task(task_fn, seconds=300):
+    while not asyncio.current_task().cancelled():
+        try:
+            await task_fn()
+            #pylint: disable=W0702
+        except:
+            logging.exception("Task failed")
+        await asyncio.sleep(seconds)
+
+
 class Spackle():
     def __init__(self):
         self.packages = {"main": [],
@@ -94,5 +104,5 @@ def main():
     logging.info("Starting spackle")
     # This code is untested
     app = create_app()
-    asyncio.ensure_future(app.service.load_packages())
+    asyncio.ensure_future(periodic_task(app.service.load_packages))
     web.run_app(app)

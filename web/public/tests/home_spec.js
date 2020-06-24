@@ -18,7 +18,7 @@ describe('Home View', function () {
     });
 
     it('Shows the title', function () {
-        expect(view.find('.title').text()).toEqual("Spackle: Web-based Conda Package Explorer");
+        expect(view.find('.title').text()).toEqual("Web-based Conda Package Explorer");
     });
 
     it('Shows the form', function (){

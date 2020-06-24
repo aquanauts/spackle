@@ -1,3 +1,4 @@
+import asyncio
 import json
 import pytest
 from asynctest import mock
@@ -59,6 +60,22 @@ async def test_can_get_info_for_a_single_project(aiohttp_client, repodata_respon
             "channel": "main",
             "version": "0.0.00"}}]}
 
+
+async def test_can_periodically_perform_a_task():
+    task_fn = mock.CoroutineMock()
+    task_fn.side_effect = lambda: asyncio.current_task().cancel()
+    with pytest.raises(asyncio.CancelledError):
+        task = await asyncio.wait_for(asyncio.create_task(spackle.periodic_task(task_fn, 0.0001)), 0.1)
+        assert task.done()
+    task_fn.assert_awaited()
+
+
+async def test_periodic_task_can_handle_errors():
+    async def task_fn():
+        asyncio.current_task().cancel()
+        raise Exception("Task Failed!")
+    with pytest.raises(asyncio.CancelledError):
+        await asyncio.wait_for(asyncio.create_task(spackle.periodic_task(task_fn, 0.0001)), 1)
 
 
 async def test_spackle_service_can_load_repodata(mocker):

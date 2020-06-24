@@ -87,10 +87,10 @@ export default function(packageArg) {
           });
           // insert table to body
           $.when( $("<table/>", {
-              "class": "table_project",
-              "id": "table_project",
+              "class": "table table-striped",
+              "id": "table",
               html: table.join( "" )
-          }).appendTo(view)).then(function() {
+          }).appendTo(view.find('.mx-auto'))).then(function() {
               // hide loading messag
               view.find('.loading').css("display", "none");
           });
@@ -115,5 +115,6 @@ export default function(packageArg) {
         }); 
         return false;
     }
+
     return view;
 }
