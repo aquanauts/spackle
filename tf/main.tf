@@ -5,30 +5,34 @@ terraform {
     region = "us-east-1"
   }
 }
+
+provider "aws" {
+  region = "us-east-1"
+}
+
 resource "aws_security_group" "allow_spackle" {
   name        = "allow_spackle"
   description = "Allow SSH/HTTP/TLS inbound traffic"
-  #vpc_id      = aws_vpc.main.id
   ingress {
     description = "SSH"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-   # cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     description = "TLS"
     from_port   = 80
     to_port     = 80
     protocol    = "tcp"
-   # cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
     description = "TLS"
     from_port   = 443
     to_port     = 443
     protocol    = "tcp"
-    #cidr_blocks = [aws_vpc.main.cidr_block]
+    cidr_blocks = ["0.0.0.0/0"]
   }
   egress {
     from_port   = 0
@@ -37,9 +41,7 @@ resource "aws_security_group" "allow_spackle" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
-provider "aws" {
-  region = "us-east-1"
-}
+
 data "aws_ami" "ubuntu" {
   most_recent = true
   filter {
@@ -52,8 +54,10 @@ data "aws_ami" "ubuntu" {
   }
   owners = ["099720109477"] # Canonical
 }
+
 resource "aws_instance" "web" {
   ami           = data.aws_ami.ubuntu.id
   instance_type = "t2.micro"
   key_name      = "spackle"
+  security_groups = [aws_security_group.allow_spackle.name]
 }
