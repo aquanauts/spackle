@@ -61,3 +61,8 @@ resource "aws_instance" "web" {
   key_name      = "spackle"
   security_groups = [aws_security_group.allow_spackle.name]
 }
+
+resource "aws_eip" "lb" {
+  instance = aws_instance.web.id
+  vpc      = true
+}
