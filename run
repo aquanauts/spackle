@@ -1,7 +1,30 @@
 #!/usr/bin/env bash
 
-PROJECT_NAME=$(basename $(dirname $(readlink -f "$0")))
+set -euo pipefail
 
 exec 2>&1
 
-exec .venv/bin/python3 -m "$PROJECT_NAME" "$@"
+export PYTHONPATH=.
+
+if [[ -e ~/.spackle_pidfile ]]; then
+    spackle_pid=$(cat ~/.spackle_pidfile)
+    echo "Stopping running spackle with pid $spackle_pid"
+    kill "$spackle_pid"
+    echo -n "Waiting for spackle to stop..."
+    while [[ -d "/proc/$spackle_pid" ]]; do
+        sleep 0.25
+        echo -n "."
+        if [[ $SECONDS -gt 10 ]]; then
+            echo ""
+            echo "Spackle refused to stop. I give up."
+            exit 1
+        fi
+    done
+    echo "...stopped!"
+fi
+
+.venv/bin/python3 -m spackle &> ~/spackle.log &
+
+echo $! > ~/.spackle_pidfile
+
+echo "Started Spackle with pid $(cat ~/.spackle_pidfile)"

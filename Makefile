@@ -65,7 +65,7 @@ solve: | $(CONDA) ## Re-solve locked project dependencies from deps.yml
 
 .PHONY: run
 run: $(DEPS) ## Run the main function
-	./run
+	$(PYTHON_CMD) -m "$(PROJECT_NAME)"
 
 .PHONY: build-package
 build-package:
