@@ -25,10 +25,12 @@ export default function(packageArg) {
         view.find('.table_project').remove();
         // get list from /project
         const args = packageArg.split('=');
-        if (args.length == 1) {
-            getPackageListFromProject(args[0]);
-        } else {
+        if (args.length > 1) {
             getPackageListFromProjectWithVersion(args[0], args[1]);
+        } else if (/\d/.test(packageArg)) {
+            getPackageListForDependency(args[0]);
+        } else {
+            getPackageListFromProject(args[0]);
         }
     }
 
@@ -44,35 +46,15 @@ export default function(packageArg) {
         return false;
     }
 
-    function escapeHtml(raw) {
-        return raw
-            .replace(/&/g, "&amp;")
-            .replace(/</g, "&lt;")
-            .replace(/>/g, "&gt;")
-            .replace(/"/g, "&quot;")
-            .replace(/'/g, "&#039;")
-            .replace(/.0a0/, "");
-         }
-
     function handleDependencies(depend) {
-        // clean dependency
-        const clean_depend = escapeHtml(depend);
-        //split by version 
-        const clean_depend_split = clean_depend.split(',');
-        // create two version links 
-        let versions = [];
-        const package_version_split = clean_depend_split[0].split(" ");
-        const name = package_version_split[0]
-        // create links to add to table
-        if (package_version_split.length > 1) {
-            versions.push(package_version_split[1]);
-            versions.push(clean_depend_split[1])
-        }
-        return "<li><a href=#search+" + clean_depend+ ">" + clean_depend  + "</a></li>"
-       //  return "<li><a href=#search+" + name + ">" + name + versions  + "</a></li>"
+        const clean_depend = depend
+            .replace(/</g, "&lt")
+            .replace(/>/g, "&gt")
+            .replace(/.0a0/, "");
+        const path = encodeURIComponent(depend);
+        return "<li><a href=#search+" + path + ">" + clean_depend + "</a></li>"
     }
-
-
+    
     function loadResponseTable(output, table){
           $.each(output, function( key, val ) {
               $.each(val, function(key, val) {
@@ -125,9 +107,31 @@ export default function(packageArg) {
         return false;
     }
 
-    // getting packagelist from /versiont
+    function getPackageListForDependency(version) {
+        let decodedVersion = decodeURIComponent(version);
+        let nameVersSplit = decodedVersion.split(" ");
+        let name = nameVersSplit[0];
+        let vers = nameVersSplit[1];
+        const table = ["<h2>", name, " ", vers + " Packages: </h2>"];
+        table.push("<tr>",
+            "<th>Package Name</th>",
+            "<th>Version</th>",
+            "<th>Build</th>",
+            "<th>Channel</th>",
+            "<th>Architecture</th>",
+            "<th>Size</th>",
+            "<th>Dependencies</th>",
+            "</tr>")
+        $.get("/version?project_name="+name+"&version="+vers).then(function(data) {
+            const output = data.packages;
+            loadResponseTable(output, table);
+        }); 
+        return false;
+    }
+
+    // getting packagelist from /version
     function getPackageListFromProjectWithVersion(name, version){
-        const table = ["<h2>", name, "-", version + " Packages: </h2>"] 
+        const table = ["<h2>", name, "-", decodeURIComponent(version) + " Packages: </h2>"];
         table.push("<tr>",
             "<th>Package Name</th>",
             "<th>Version</th>",

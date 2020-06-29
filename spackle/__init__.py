@@ -2,8 +2,11 @@ import os
 import sys
 import logging
 import asyncio
+import re
+import urllib.parse
 from aiohttp import web
 import aiohttp
+from conda.models import version
 
 WEB_ROOT = f"{os.path.dirname(os.path.abspath(__file__))}/../web/public"
 
@@ -27,7 +30,11 @@ class Spackle():
                          "mosek": []}
         self.http_client = aiohttp.ClientSession()
 
-    async def query_for_project_data(self, http_request):
+    async def get_project_data(self, http_request):
+        package_list = self.query_for_project_data(http_request)
+        return web.json_response(data=package_list)
+
+    def query_for_project_data(self, http_request):
         package_list = {'packages': []}
         for channel in self.packages:
             for channel_repodata in self.packages[channel]:
@@ -41,31 +48,37 @@ class Spackle():
                         package_info['channel'] = channel
                         # append package to list
                         package_list['packages'].append({package: package_info})
+        return package_list
+
+    async def get_project_data_with_version(self, http_request):
+        project_data = self.query_for_project_data(http_request)
+        package_list = self.query_for_project_data_with_version(project_data, http_request)
         return web.json_response(data=package_list)
 
-    async def query_for_project_data_with_version(self, http_request):
-        package_list = {'packages': []}
-        for channel in self.packages:
-            for channel_repodata in self.packages[channel]:
-                arch_type = channel_repodata['info']['subdir']
-                for package in channel_repodata['packages']:
-                    package_info = channel_repodata['packages'][package]
-                    project_name = package_info['name']
-                    project_version = package_info['version']
-                    if project_name == http_request.query['project_name']:
-                        if project_version == http_request.query['version']:
-                            # add archtype and channel to package info
-                            package_info['subdir'] = arch_type
-                            package_info['channel'] = channel
-                            # append package to list
-                            package_list['packages'].append({package: package_info})
-        return web.json_response(data=package_list)
+    def query_for_project_data_with_version(self, package_list, http_request):
+        package_version_list = {'packages': []}
+        for package in package_list['packages']:
+            package_info = list(package.values())[0]
+            package_name = list(package.keys())[0]
+            project_version = package_info['version']
+            # handle version range
+            query_version = urllib.parse.unquote(http_request.query['version'])
+            spec = version.VersionSpec(query_version)
+            if spec.match(project_version):
+                package_version_list['packages'].append({package_name: package_info})
+        return package_version_list
+
 
     async def get_index(self, _):
         return web.FileResponse(WEB_ROOT + "/index.html")
 
     # fetch packages from conda channels
     async def load_packages(self):
+        self.packages = {"main": [],
+                         "free": [],
+                         "conda-forge": [],
+                         "bioconda": [],
+                         "mosek": []}
         channel_urls = ['https://repo.anaconda.com/pkgs/main/linux-64/repodata.json',
                         'https://repo.anaconda.com/pkgs/main/noarch/repodata.json',
                         'https://repo.anaconda.com/pkgs/free/linux-64/repodata.json',
@@ -110,8 +123,8 @@ def create_app():
     app = web.Application()
     app.service = Spackle()
     app.add_routes([web.get('/project_names', app.service.get_project_names),
-                    web.get('/project', app.service.query_for_project_data),
-                    web.get('/version', app.service.query_for_project_data_with_version),
+                    web.get('/project', app.service.get_project_data),
+                    web.get('/version', app.service.get_project_data_with_version),
                     web.get("/", app.service.get_index),
                     web.static('/', WEB_ROOT)])
     return app

@@ -10,6 +10,7 @@ dependencies:
   - aiohttp
   - pytest-mock
   - asynctest
+  - conda
   - pylint
   - pytest-watch
   - pytest-aiohttp

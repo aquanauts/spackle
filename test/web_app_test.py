@@ -20,6 +20,32 @@ def repodata_response_fixture():
                 "subdir": "linux-64",
                 "version": "0.0.00"}}}
 
+@pytest.fixture(name="repodata_response_version")
+def repodata_response_version_fixture():
+    return {"info": {"subdir": "linux-64"},
+            "packages": {
+                "aiohttp-1.2.0-abcd": {
+                    "build": "0",
+                    "build_number": 0,
+                    "date": "0000-00-00",
+                    "depends": [],
+                    "license_family": "other",
+                    "md5": "abcd",
+                    "name": "aiohttp",
+                    "size": 0,
+                    "subdir": "linux-64",
+                    "version": "1.2.0"},
+                "aiohttp-1.3.0-abcde": {
+                    "build": "0",
+                    "build_number": 0,
+                    "date": "0000-00-00",
+                    "depends": [],
+                    "license_family": "other",
+                    "md5": "abcde",
+                    "name": "aiohttp",
+                    "size": 0,
+                    "subdir": "linux-64",
+                    "version": "1.3.0"}}}
 
 async def test_can_get_the_list_of_project_names(aiohttp_client, repodata_response):
     app = spackle.create_app()
@@ -36,7 +62,6 @@ async def test_can_get_static_content(aiohttp_client):
     client = await aiohttp_client(app)
     resp = await client.get("/tests/index.html")
     assert resp.status == 200
-
 
 async def test_can_get_info_for_a_single_project(aiohttp_client, repodata_response):
     app = spackle.create_app()
@@ -81,6 +106,43 @@ async def test_can_get_info_for_a_single_project_with_version(aiohttp_client, re
             "subdir": "linux-64",
             "channel": "main",
             "version": "0.0.00"}}]}
+
+async def test_can_get_info_for_packages_with_version_range(aiohttp_client, repodata_response_version):
+    app = spackle.create_app()
+    app.service.organize_packages(repodata_response_version, "main")
+    client = await aiohttp_client(app)
+    resp = await client.get("/version?project_name=aiohttp&version=%20>%3D1.2.0")
+    assert resp.status == 200
+    text = await resp.text()
+    project_info = json.loads(text)
+    assert project_info == {'packages': [
+        {"aiohttp-1.2.0-abcd": {
+            "build": "0",
+            "build_number": 0,
+            "date": "0000-00-00",
+            "depends": [],
+            "license_family": "other",
+            "md5": "abcd",
+            "name": "aiohttp",
+            "size": 0,
+            "subdir": "linux-64",
+            "channel": "main",
+            "version": "1.2.0"}},
+        {"aiohttp-1.3.0-abcde": {
+            "build": "0",
+            "build_number": 0,
+            "date": "0000-00-00",
+            "depends": [],
+            "license_family": "other",
+            "md5": "abcde",
+            "name": "aiohttp",
+            "size": 0,
+            "subdir": "linux-64",
+            "channel": "main",
+            "version": "1.3.0"}}
+        ]}
+
+
 
 async def test_can_periodically_perform_a_task():
     task_fn = mock.CoroutineMock()
