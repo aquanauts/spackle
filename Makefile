@@ -81,3 +81,13 @@ package: build-package ## Build and test a conda package
 	rm -rf .test-venv
 	$(CONDA) create -y -p .test-venv -c ./dist/ spackle_server -c conda-forge
 	.test-venv/bin/spackle --version
+
+
+.PHONY: deploy
+deploy: ## Deploy the latest version from github to https://spackle.dev
+	cat bin/start_server.sh | ssh -i ~/.ssh/spackle_1.pem ubuntu@35.173.109.252 /bin/bash
+
+
+.PHONY: logs
+logs: ## Show logs for remote version on spackle.dev
+	ssh -i ~/.ssh/spackle_1.pem ubuntu@35.173.109.252 'cat spackle.log' | less

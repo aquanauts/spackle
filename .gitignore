@@ -6,3 +6,4 @@ dist
 __pycache__
 .miniconda3
 tf/.terraform
+deploy
