@@ -21,9 +21,16 @@ resource "aws_security_group" "allow_spackle" {
     cidr_blocks = ["0.0.0.0/0"]
   }
   ingress {
-    description = "TLS"
+    description = "HTTP"
     from_port   = 80
     to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    description = "TEST"
+    from_port   = 8080
+    to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -57,7 +64,7 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_instance" "web" {
   ami           = data.aws_ami.ubuntu.id
-  instance_type = "t2.micro"
+  instance_type = "t2.medium"
   key_name      = "spackle"
   security_groups = [aws_security_group.allow_spackle.name]
 }
