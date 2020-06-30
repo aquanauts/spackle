@@ -8,6 +8,7 @@ export default function() {
                 "<th>Channel</th>",
                 "<th>Architecture</th>",
                 "<th>Last Updated</th>",
+                "<th>Number of Packages</th>",
                 "<th>Source</th>",
                 "</tr>"]
             loadConfigTable(channels, table);
@@ -21,6 +22,7 @@ export default function() {
             "<th>Channel</th>",
             "<th>Architecture</th>",
             "<th>Last Updated</th>",
+            "<th>Number of Packages</th>",
             "<th>Source</th>",
             "</tr>"]
         loadConfigTable(channels, table);
@@ -33,7 +35,8 @@ export default function() {
                      "<td>" , key, "</td>",
                      "<td>" , val["arch_type"] , "</td>", 
                      "<td>" , val["timestamp"] , "</td>",
-                     "<td><a target='_blank' href=", val["url"], ">", key, "</a></td>",
+                    "<td>" , val["size"] , "</td>", 
+                    "<td><a target='_blank' href=", val["url"], ">", key, "</a></td>",
                      "</tr>"
                  );
             });

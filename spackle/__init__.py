@@ -80,7 +80,11 @@ class Spackle():
                 arch_type = arch["info"]["subdir"]
                 timestamp = arch["timestamp"]
                 url = arch["url"]
-                channel_list["channels"].append({channel: {"arch_type": arch_type, "timestamp": timestamp, "url": url}})
+                size = len(arch["packages"])
+                channel_list["channels"].append({channel: {"arch_type": arch_type,
+                                                           "timestamp": timestamp,
+                                                           "url": url,
+                                                           "size": size}})
         return web.json_response(data=channel_list)
 
     # fetch packages from conda channels
