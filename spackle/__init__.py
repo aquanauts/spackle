@@ -4,6 +4,7 @@ import logging
 import asyncio
 import re
 import urllib.parse
+import datetime
 from aiohttp import web
 import aiohttp
 from conda.models import version
@@ -72,6 +73,16 @@ class Spackle():
     async def get_index(self, _):
         return web.FileResponse(WEB_ROOT + "/index.html")
 
+    async def get_channels(self, _):
+        channel_list = {"channels" : []}
+        for channel in self.packages:
+            for arch in self.packages[channel]:
+                arch_type = arch["info"]["subdir"]
+                timestamp = arch["timestamp"]
+                url = arch["url"]
+                channel_list["channels"].append({channel: {"arch_type": arch_type, "timestamp": timestamp, "url": url}})
+        return web.json_response(data=channel_list)
+
     # fetch packages from conda channels
     async def load_packages(self):
         self.packages = {"main": [],
@@ -93,10 +104,13 @@ class Spackle():
             channel = self.parse_channel_url(url)
             logging.info("Loading packages from %s", url)
             response = await self.http_client.get(url)
-            self.organize_packages(await response.json(), channel)
+            self.organize_packages(await response.json(), channel, url)
             logging.info("Successfully received packages from %s", url)
 
-    def organize_packages(self, channel_repodata, channel):
+    def organize_packages(self, channel_repodata, channel, url):
+        timestamp = datetime.datetime.now()
+        channel_repodata["timestamp"] = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+        channel_repodata["url"] = url
         self.packages[channel].append(channel_repodata)
 
     def parse_channel_url(self, url):
@@ -119,12 +133,19 @@ class Spackle():
                     project_names.add(project_name)
         return web.json_response(data={"projects": list(project_names)})
 
+
+async def on_prepare(_, response):
+    response.headers['cache-control'] = 'no-cache'
+
+
 def create_app():
     app = web.Application()
     app.service = Spackle()
+    app.on_response_prepare.append(on_prepare)
     app.add_routes([web.get('/project_names', app.service.get_project_names),
                     web.get('/project', app.service.get_project_data),
                     web.get('/version', app.service.get_project_data_with_version),
+                    web.get('/channels', app.service.get_channels),
                     web.get("/", app.service.get_index),
                     web.static('/', WEB_ROOT)])
     return app

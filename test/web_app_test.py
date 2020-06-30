@@ -4,7 +4,6 @@ import pytest
 from asynctest import mock
 import spackle
 
-
 @pytest.fixture(name="repodata_response")
 def repodata_response_fixture():
     return {"info": {"subdir": "linux-64"},
@@ -49,7 +48,7 @@ def repodata_response_version_fixture():
 
 async def test_can_get_the_list_of_project_names(aiohttp_client, repodata_response):
     app = spackle.create_app()
-    app.service.organize_packages(repodata_response, 'main')
+    app.service.organize_packages(repodata_response, 'main', '')
     client = await aiohttp_client(app)
     resp = await client.get("/project_names")
     assert resp.status == 200
@@ -65,7 +64,7 @@ async def test_can_get_static_content(aiohttp_client):
 
 async def test_can_get_info_for_a_single_project(aiohttp_client, repodata_response):
     app = spackle.create_app()
-    app.service.organize_packages(repodata_response, "main")
+    app.service.organize_packages(repodata_response, "main", '')
     client = await aiohttp_client(app)
     resp = await client.get("/project?project_name=aiohttp")
     assert resp.status == 200
@@ -87,7 +86,7 @@ async def test_can_get_info_for_a_single_project(aiohttp_client, repodata_respon
 
 async def test_can_get_info_for_a_single_project_with_version(aiohttp_client, repodata_response):
     app = spackle.create_app()
-    app.service.organize_packages(repodata_response, "main")
+    app.service.organize_packages(repodata_response, "main", '')
     client = await aiohttp_client(app)
     resp = await client.get("/version?project_name=aiohttp&version=0.0.00")
     assert resp.status == 200
@@ -109,7 +108,7 @@ async def test_can_get_info_for_a_single_project_with_version(aiohttp_client, re
 
 async def test_can_get_info_for_packages_with_version_range(aiohttp_client, repodata_response_version):
     app = spackle.create_app()
-    app.service.organize_packages(repodata_response_version, "main")
+    app.service.organize_packages(repodata_response_version, "main", '')
     client = await aiohttp_client(app)
     resp = await client.get("/version?project_name=aiohttp&version=%20>%3D1.2.0")
     assert resp.status == 200
@@ -142,7 +141,15 @@ async def test_can_get_info_for_packages_with_version_range(aiohttp_client, repo
             "version": "1.3.0"}}
         ]}
 
-
+async def test_can_get_channel_data(aiohttp_client, repodata_response):
+    app = spackle.create_app()
+    app.service.organize_packages(repodata_response, "main", 'url')
+    client = await aiohttp_client(app)
+    resp = await client.get("/channels")
+    assert resp.status == 200
+    text = await resp.text()
+    channel_info = json.loads(text)
+    assert list(channel_info["channels"][0].keys()) == ["main"]
 
 async def test_can_periodically_perform_a_task():
     task_fn = mock.CoroutineMock()
@@ -183,4 +190,5 @@ async def test_spackle_service_can_load_repodata(mocker):
                                                      "bioconda",
                                                      "mosek"]
     main = spackle_service.packages["main"]
-    assert main == [{"name":"some package"}, {"name":"some package"}]
+    assert list(main[0].keys()) == ["name", "timestamp", "url"]
+    #assert main == [{"name":"some package"}, {"name":"some package"}]

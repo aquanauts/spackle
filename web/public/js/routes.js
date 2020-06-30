@@ -1,4 +1,5 @@
 import homeView from '../js/views/home.js';
+import configView from '../js/views/config.js';
 
 function showView(hash) {
     //example hash: #packageViewer+aiohttp==1.2.3
@@ -8,7 +9,8 @@ function showView(hash) {
     const routes = {
         '': homeView,
         '#home': homeView, 
-        '#search': homeView
+        '#search': homeView,
+        '#config': configView
     };
     const viewFn = routes[viewName];
     $('.viewContainer').empty().append(viewFn.apply(null, args));
